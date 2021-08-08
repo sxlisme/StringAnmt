@@ -2,8 +2,8 @@ var StrAnmt = new StringAnmt({
     videoId: 'vdo',
     canvasId: 'cvs',
 });
-StrAnmt.openCamera(
-    800,
-    600,
-    false
-)
+// StrAnmt.openCamera(
+//     960,
+//     540,
+//     false
+// )

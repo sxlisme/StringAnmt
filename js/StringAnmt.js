@@ -1,5 +1,5 @@
 ;
-(function(root, fn) {
+(function (root, fn) {
     if (typeof define === 'function' && define.amd) {
         define(fn);
     } else if (typeof exports === 'object') {
@@ -7,15 +7,15 @@
     } else {
         root.StringAnmt = fn();
     }
-})(this, function() {
+})(this, function () {
 
     function Main(conf) {
         this.vdo = document.getElementById(conf.videoId);
         this.cvs = document.getElementById(conf.canvasId);
-        this.text = conf.text || '丨一二三十上土王田正回困国囸昌晶';
-        this.fontSize = conf.fontSize || '10';
-        this.color = conf.color || '#0f0';
-
+        // 一二三十上土王田正回困国囸昌晶
+        this.text = conf.text || ' 一二三十上土王田正回困国囸昌晶';
+        this.fontSize = conf.fontSize || '50';
+        this.color = conf.color || '#fff';
         this.ctx = this.cvs.getContext('2d');
         this.W = this.cvs.width = this.cvs.offsetWidth;
         this.H = this.cvs.height = this.cvs.offsetHeight;
@@ -30,7 +30,7 @@
         }
 
         var self = this;
-        this.vdo.addEventListener('play', function() {
+        this.vdo.addEventListener('play', function () {
             self.isPlay = true
         });
 
@@ -39,7 +39,7 @@
     Main.prototype = {
         constructor: Main,
 
-        _AddText: function(gray) {
+        _AddText: function (gray) {
             var d = parseInt(256 / this.text.length);
             var i = parseInt(gray / d);
             if (i > this.text.length - 1) {
@@ -47,7 +47,7 @@
             }
             return this.text[i];
         },
-        _begin: function() {
+        _begin: function () {
             var self = this;
             var isPlay = this.isPlay;
             var raf = this.raf;
@@ -57,7 +57,7 @@
             loop();
 
             function loop() {
-                var isPlay=self.isPlay;
+                var isPlay = self.isPlay;
                 if (isPlay) {
                     var ctx = self.ctx;
                     var W = self.W;
@@ -74,31 +74,44 @@
                         var fm = ctx.getImageData(0, 0, W, H);
                     } catch (err) {
                         ctx.clearRect(0, 0, W, H);
-                        return 
+                        return
                     }
                     ctx.clearRect(0, 0, W, H);
                     var data = fm.data;
                     var str = '';
                     for (var j = 0; j < colLen; j++) {
                         str = '';
+                        var fc = '';
+                        var wordColors = [];
                         for (var i = 0; i < rowLen; i++) {
                             var index = (j * W + i) * fontSize;
                             index *= 4;
                             var gray = data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114;
+                            wordColors.push(`rgb(${data[index]},${data[index + 1]},${data[index + 2]})`);
+                            fc = `rgb(${data[index]},${data[index + 1]},${data[index + 2]})`
+                            // console.log(data[index],data[index+1],data[index+2]);
                             var k = parseInt(gray / len);
                             if (k > len - 1) {
                                 k = len - 1;
                             }
                             str += text[k];
                         }
+                        // ctx.fillStyle = fc;
+                        // console.log(fc);
+                        var gradient = ctx.createLinearGradient(0, 0, W, 0); //设置线性渐变
+
+                        self.linearGradient(gradient, wordColors)
+
+                        ctx.fillStyle = gradient;
+
                         ctx.fillText(str, 0, j * fontSize, W)
                     }
-                    isPlay = ctx = W = H = colLen = rowLen = fontSize = gray = k = data = str= i = j = fm = text =len = null;
+                    isPlay = ctx = W = H = colLen = rowLen = fontSize = gray = k = data = str = i = j = fm = text = len = null;
                 }
-                raf(loop) 
+                raf(loop)
             }
         },
-        openCamera: function(cameraW, cameraH, audioBool) {
+        openCamera: function (cameraW, cameraH, audioBool) {
             var vdo = this.vdo;
             var constraints = {
                 audio: audioBool,
@@ -109,25 +122,31 @@
             }
             navigator.mediaDevices
                 .getUserMedia(constraints)
-                .then(function(mediaStream) {
+                .then(function (mediaStream) {
                     vdo.srcObject = mediaStream;
-                    vdo.onloadedmetadata = function(e) {
+                    vdo.onloadedmetadata = function (e) {
                         vdo.play();
                     }
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     alert('你的浏览器真需要去升级了，不然好多好玩的特性你根本玩不了。。。')
                 });
             return this;
         },
-        play: function() {
+        play: function () {
             this.isPlay = true;
         },
-        pause: function() {
+        pause: function () {
             this.isPlay = false;
         },
-        playAndPause: function() {
+        playAndPause: function () {
             return this.isPlay = !this.isPlay;
+        },
+        linearGradient: function (linearGradientObj, colors) {
+            // console.log(linearGradientObj,colors)
+            for (let i = 0; i < colors.length; i++) {
+                linearGradientObj.addColorStop(i / colors.length, colors[i]);
+            }
         }
     }
     return Main
